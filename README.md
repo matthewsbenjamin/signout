@@ -1,6 +1,6 @@
 # signout
-Boat signout app
+## Boat signout app
 
-# Hey Luke - feel free to tinker with styles and bring it out of 1996
+Hey Luke - feel free to tinker with styles and bring it out of 1996
 
-# Cheers!
+Cheers!
