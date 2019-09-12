@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <link rel="stylesheet" href="../styles/styles.css">
+    <title>Sign Out</title>
+</head>
+<body>
+    {{template "menu"}}
+    <div class="signForm">
+        <form action="/signout" method="post">
+            <div class="boats">
+                <select name="boat" id="boat" size="24" required>
+                    {{range .BoatList}} <option value="{{.}}">{{.}}</option>{{end}}
+                </select>
+            </div>
+            <div class="adults">
+                    <select name="adult" id="adult" size="15" required>
+                        {{range .AdultList}} <option value="{{.}}">{{.}}</option>{{end}}
+                    </select>
+            </div>
+            <input type="submit" value="Sign Out">
+        </form>
+    </div>
+</body>
+{{template "copyright"}}
+</html>

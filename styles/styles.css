@@ -1,0 +1,26 @@
+
+* {
+    font-size-adjust: 1;
+    font-family: sans-serif;
+    /* background-color: darkgrey; */
+    margin: 2px;
+}
+
+h1 {
+    background-color: purple;
+    color: yellow;
+}
+
+.mainNavigation {
+    position: 0 auto;
+}
+
+.copyright {
+    font-size-adjust: 0.6;
+    position: fixed;
+    bottom: 0;
+}
+
+.parentContainer {
+    margin: auto;
+}

@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <link rel="stylesheet" href="../styles/styles.css">
+    <title>New User</title>
+</head>
+<body>
+    {{template "menu"}}
+    <div class="parentContainer">
+    <form action="/new-user" method="post">
+        <input type="text" name="name" id="name" placeholder="Name"><br>
+        <input type="email" name="email" id="email" placeholder="Email Address"><br>
+        <input type="password" name="pwd" id="pwd" placeholder="Password"><br>
+        <input type="password" name="pwc2" id="pwd2" placeholder="Password Confirmation"><br>
+        <input type="submit" value="Submit">        
+    </form>
+</div>
+</body>
+{{template "copyright"}}
+</html>
