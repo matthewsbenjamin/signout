@@ -9,5 +9,16 @@
 
 my TODOS:
 - set up mysql on aws - figure out how to migrate this in one piece and how this can be automated
-- add to an AWS resource
+	- set up on aws rdb - didn't get automated but idc
+- add to an AWS ec2 instance
 - hazards - collection and communication of hazards on the river
+- Password storage, reset requests (?)
+- Some responsiveness to say that the boat has been booked succesfully
+- login management - username taken etc
+- all of the messaging layer - pinging people when they forget to sign back in - creating some kind of notification if someone is vulnerable (weather connection?)
+- hazards API
+- boats on the water API
+
+Connect to the booking system to present that onscreen...?
+
+Talk to Andy R for access to this
