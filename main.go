@@ -6,10 +6,10 @@ import (
 	"html/template"
 	"log"
 	"net/http"
-
-	//"time"
+	"io"
 
 	_ "github.com/go-sql-driver/mysql"
+	"github.com/google/uuid"
 )
 
 var tpl *template.Template
@@ -26,6 +26,8 @@ func main() {
 	http.Handle("/styles/", http.StripPrefix("/styles/", fs))
 	img := http.FileServer(http.Dir("img/"))
 	http.Handle("/img/", http.StripPrefix("/img/", img))
+	sc := http.FileServer(http.Dir("scripts/"))
+	http.Handle("/scripts/", http.StripPrefix("/scripts/", sc))
 	http.Handle("/favicon.ico", http.NotFoundHandler())
 
 	// Get or Port request handlers
@@ -35,9 +37,16 @@ func main() {
 	http.HandleFunc("/signout", signoutHandler)
 	http.HandleFunc("/signin", signinHandler)
 	http.HandleFunc("/hazards", hazards)
+	http.HandleFunc("/ping", ping)
 
 	http.ListenAndServe(":8080", nil)
 }
+
+func ping(w http.ResponseWriter, req *http.Request) {
+	io.WriteString(w, "OK")
+
+}
+
 
 func index(w http.ResponseWriter, req *http.Request) {
 
@@ -90,20 +99,6 @@ func newUserPost(w http.ResponseWriter, req *http.Request) {
 
 	http.Redirect(w, req, "/", http.StatusTemporaryRedirect)
 }
-
-// func newBoatHandler(w http.ResponseWriter, req *http.Request) {
-
-// 	if req.Method == http.MethodPost {
-// 		// Parse form
-// 		// return the main page
-// 		boatPost(w, req)
-// 	}
-
-// 	if req.Method == http.MethodGet {
-// 		boatGet(w, req)
-// 		// Return the sign in page
-// 	}
-// }
 
 func signoutHandler(w http.ResponseWriter, req *http.Request) {
 
@@ -332,5 +327,51 @@ func newBoatGet(w http.ResponseWriter, req *http.Request) {
 
 func newBoatPost(w http.ResponseWriter, req *http.Request) {
 
+	req.ParseForm()
+
+	db, err := sql.Open("mysql", AUTH)
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer db.Close()
+
+	stmt, err := db.Prepare("INSERT INTO boat_locations (boat_name) VALUES (?);")
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	b := req.FormValue("boatName")
+
+	_, err = stmt.Exec(b)
+	if err != nil {
+		log.Fatal(err)
+	}
+
 	http.Redirect(w, req, "/", http.StatusTemporaryRedirect)
+
 }
+
+func isLoggedIn(req *http.Request) bool {
+
+	// get cookie
+	// if there's no sid cookie -- redirect to login page
+
+	// compare cookie sid to database 
+
+
+	return false
+}
+
+func loginHandler(w http.ResponseWriter, req *http.Request) {
+
+	// if the user is logged in already - rdr index
+	
+	// if req.Method == http.MethodGet {
+	// 	loginGet(w, req)
+	// }
+
+	// if req.Method == http.MethodPost {
+	// 	loginPost(w, req)
+	// }
+}
+
