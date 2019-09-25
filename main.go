@@ -6,6 +6,7 @@ import (
 	"html/template"
 	"log"
 	"net/http"
+
 	//"time"
 
 	_ "github.com/go-sql-driver/mysql"
@@ -29,7 +30,7 @@ func main() {
 
 	// Get or Port request handlers
 	http.HandleFunc("/", index)
-	// http.HandleFunc("/new-boat", newBoatHandler)
+	http.HandleFunc("/new-boat", newBoatHandler)
 	http.HandleFunc("/new-user", newUserHandler)
 	http.HandleFunc("/signout", signoutHandler)
 	http.HandleFunc("/signin", signinHandler)
@@ -281,7 +282,7 @@ func hazards(w http.ResponseWriter, req *http.Request) {
 	defer db.Close()
 
 	type hazard struct {
-		Timestamp string
+		Timestamp   string
 		Description string
 	}
 
@@ -294,7 +295,7 @@ func hazards(w http.ResponseWriter, req *http.Request) {
 		log.Fatal(err)
 	}
 	for rows.Next() {
-		err = rows.Scan(&timestamp, &description)	
+		err = rows.Scan(&timestamp, &description)
 
 		hazards = append(hazards, hazard{timestamp, description})
 	}
@@ -308,4 +309,28 @@ func hazards(w http.ResponseWriter, req *http.Request) {
 	}
 
 	tpl.ExecuteTemplate(w, "hazards.html", pageData)
+}
+
+func newBoatHandler(w http.ResponseWriter, req *http.Request) {
+
+	// Change this so that only admin people can sign in
+	// Cookies etc
+
+	if req.Method == http.MethodGet {
+		newBoatGet(w, req)
+	}
+
+	if req.Method == http.MethodPost {
+		newBoatPost(w, req)
+	}
+}
+
+func newBoatGet(w http.ResponseWriter, req *http.Request) {
+
+	tpl.ExecuteTemplate(w, "new-boat.html", nil)
+}
+
+func newBoatPost(w http.ResponseWriter, req *http.Request) {
+
+	http.Redirect(w, req, "/", http.StatusTemporaryRedirect)
 }
