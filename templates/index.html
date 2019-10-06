@@ -8,15 +8,20 @@
     <title>Minerva Signout</title>
 </head>
 <body>
-    <!-- Leave my HTMLs alone -->
     {{template "menu"}}
-    <div class="mainNavigation">
-            <a href="/signout">Sign Out</a>
-            <a href="/signin">Sign In</a>  
-    </div>
-    <div class="clock">
-            <iframe src="http://free.timeanddate.com/clock/i6xjs05d/n136/tluk/tt0/th1/ts1" frameborder="0" width="253" height="19"></iframe>
-    </div>
-</body>
+    <div class="parentContainer">
+        <div class="content">
+            <div class="frontPage">
+                    <h1><a href="/signout">Sign Out</a>
+                    <a href="/signin">Sign In</a>  
+                </h1>
+            
+                <div class="clock">
+                        <iframe src="http://free.timeanddate.com/clock/i6xjs05d/n136/tluk/tt0/th1/ts1" frameborder="0" width="253" height="19"></iframe>
+                </div>
+            </div>
+        </div>
+    </div>    
 {{template "copyright"}}
+</body>
 </html>

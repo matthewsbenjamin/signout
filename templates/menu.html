@@ -1,13 +1,13 @@
 {{define "menu"}}
-<h1> <a href="/">Minerva Boat Signout </a></h1>
 <div class="menu">
+<h1> <a href="/">Minerva Boat Signout </a></h1>
     <a href="/new-user">New User</a>
     <a href="/new-boat">New Boat</a>
     <a href="/hazards">Hazards</a>
+    <div class="session-mgmt">
+        <!-- Some logic as to whether the user is logged in 
+        or logged out -->
+        <a href="/login">Log In</a>
+    </div>
 </div>
-<div class="session-mgmt">
-    <!-- Some logic as to whether the user is logged in 
-    or logged out -->
-    <a href="/login">Log In</a>
-</div><br>
 {{end}}

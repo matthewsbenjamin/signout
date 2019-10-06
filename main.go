@@ -4,20 +4,37 @@ import (
 	"database/sql"
 	"fmt"
 	"html/template"
+	"io"
 	"log"
 	"net/http"
-	"io"
+	"errors"
+	"time"
 
 	_ "github.com/go-sql-driver/mysql"
-	"github.com/google/uuid"
+	"github.com/satori/go.uuid"
+	"golang.org/x/crypto/bcrypt"
+
 )
 
 var tpl *template.Template
-var AUTH string = "root:password@tcp(localhost:3306)/signout"
+var AUTH string = "admin:password@tcp(signout.crbqagbsfqi5.eu-west-2.rds.amazonaws.com:3306)/signout"
+var port string = ":8080"
+
 
 func init() {
 	tpl = template.Must(template.ParseGlob("templates/*"))
+
+	// User just holds a users information - does not persist because it's all 
+	// held in the database
+	type User struct {
+		Uid string
+		Club string
+	}
+
+	// non-persistent store of sessions
+	// var Sessions map[string]User
 }
+
 
 func main() {
 
@@ -38,8 +55,12 @@ func main() {
 	http.HandleFunc("/signin", signinHandler)
 	http.HandleFunc("/hazards", hazards)
 	http.HandleFunc("/ping", ping)
+	http.HandleFunc("/login", loginHandler)
+	http.HandleFunc("/logout", logout)
 
-	http.ListenAndServe(":8080", nil)
+	
+	fmt.Printf("###################################\nRunning on port %s\n\n", port)
+	http.ListenAndServe(port, nil) // 
 }
 
 func ping(w http.ResponseWriter, req *http.Request) {
@@ -47,10 +68,25 @@ func ping(w http.ResponseWriter, req *http.Request) {
 
 }
 
-
 func index(w http.ResponseWriter, req *http.Request) {
 
+	if isLoggedIn(req) {
+		http.Redirect(w, req, "/login", http.StatusTemporaryRedirect)
+	}
+
 	tpl.ExecuteTemplate(w, "index.html", nil)
+
+}
+
+
+func logout(w http.ResponseWriter, req *http.Request) {
+	
+	if isLoggedIn(req) {
+		// do something with the cookie - remove and redirect to index
+		fmt.Println("user logged out")
+	}
+
+	http.Redirect(w, req, "/", http.StatusTemporaryRedirect)
 
 }
 
@@ -66,12 +102,11 @@ func newUserHandler(w http.ResponseWriter, req *http.Request) {
 }
 
 func newUserGet(w http.ResponseWriter, req *http.Request) {
+
 	tpl.ExecuteTemplate(w, "new-user.html", nil)
 }
 
 func newUserPost(w http.ResponseWriter, req *http.Request) {
-
-	// TODO handle errors if the user has already registered
 
 	db, err := sql.Open("mysql", AUTH)
 	if err != nil {
@@ -118,7 +153,6 @@ func signoutHandler(w http.ResponseWriter, req *http.Request) {
 func signoutPost(w http.ResponseWriter, req *http.Request) {
 
 	db, err := sql.Open("mysql", AUTH)
-	// TODO set this up for AWS
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -351,27 +385,172 @@ func newBoatPost(w http.ResponseWriter, req *http.Request) {
 
 }
 
+
+// bool whether the user is logged in or not
 func isLoggedIn(req *http.Request) bool {
 
 	// get cookie
 	// if there's no sid cookie -- redirect to login page
 
-	// compare cookie sid to database 
+	c, err := req.Cookie("sid")
 
+	if err == http.ErrNoCookie {
+		return false
+	}
 
-	return false
+	// query the database with the UID
+	// if nil - then return false
+	// prevent injection somehow?
+
+	db, err := sql.Open("mysql", AUTH)
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer db.Close()
+
+	var u string
+	err = db.QueryRow("SELECT user FROM sessions WHERE sid = '?'", c).Scan(&u)
+
+	return true
 }
 
 func loginHandler(w http.ResponseWriter, req *http.Request) {
 
 	// if the user is logged in already - rdr index
-	
-	// if req.Method == http.MethodGet {
-	// 	loginGet(w, req)
-	// }
+	if isLoggedIn(req) {
+		http.Redirect(w, req, "/", http.StatusTemporaryRedirect)
+	}
 
-	// if req.Method == http.MethodPost {
-	// 	loginPost(w, req)
-	// }
+	if req.Method == http.MethodGet {
+		loginGet(w, req, nil)
+	}
+
+	if req.Method == http.MethodPost {
+		loginPost(w, req)
+	}
 }
 
+func loginGet(w http.ResponseWriter, req *http.Request, e error) {
+
+	tpl.ExecuteTemplate(w, "login.html", nil)
+
+}
+
+func loginPost(w http.ResponseWriter, req *http.Request) {
+
+	// parse form
+	req.ParseForm()
+
+	uname := req.FormValue("username")
+	pwd, err := hashPassword(req.FormValue("pwd"))
+	if err != nil {
+		http.Error(w, "Authentication error", 500)
+	}
+	persist := req.FormValue("persist") == "on"
+
+
+	db, err := sql.Open("mysql", AUTH)
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer db.Close()
+
+	
+	// confirmation that pwd exists
+	// scan result into p
+	var c string
+	err = db.QueryRow("SELECT pwd FROM adults WHERE email = ? AND expired", pwd).Scan(&c)
+	if err == sql.ErrNoRows {
+		M := "Error: Username not found"
+		tpl.ExecuteTemplate(w, "login.html", M)
+	}
+
+	// get the result - r - of the password hash
+	r := bcrypt.CompareHashAndPassword([]byte(pwd), []byte(c))
+	
+	if r == nil { // unsuccesful password
+
+		M := errors.New("Error: Incorrect Password")
+		tpl.ExecuteTemplate(w, "login.html", M)
+
+	} else { // succesful password
+
+		// set a cookie - sid
+		id, err := uuid.NewV4()
+		if err != nil {
+			http.Error(w, "UUID Failed", 500)
+		}
+	
+		cook := http.Cookie{
+			Name:  "sid",
+			Value: id.String(),
+			Path:  "/",
+		}
+	
+		if persist {
+			cook.MaxAge = int(365 * 24 * time.Hour)
+			http.SetCookie(w, &cook)
+	
+		} else {
+			http.SetCookie(w, &cook)
+	
+		}
+
+		stmt, err := db.Prepare("INSERT INTO sessions (sid, user) VALUES (?, ?)")
+		if err != nil {
+			http.Error(w, "Statement preparation failed", 500)
+		}
+		// Write to database
+		_, err = stmt.Exec(id, uname)
+		if err != nil {
+			http.Error(w, "Statement execution failed", 500)
+		}
+	}
+	// now add this to the database of sid
+}
+
+
+// authenticate will return true if the user is logged in
+// todo - enrich the return value OR create userData func to return logged in data
+func authenticate(req *http.Request) bool {
+
+	uid, err := req.Cookie("uid")
+	if err != http.ErrNoCookie {
+
+		// they already have a cookie
+		db, err := sql.Open("mysql", AUTH)
+		if err != nil {
+			log.Fatal(err)
+		}
+		defer db.Close()
+
+		// get the corresponding uid from the database
+		// then scan the count of uid into ct
+		var ct int
+		err = db.QueryRow("SELECT count(uid) FROM logins WHERE uid =  ?", uid.Value).Scan(&ct)
+		if err == sql.ErrNoRows {
+			return false
+		}
+		if err != nil {
+			log.Fatal(err)
+		}
+
+		return ct > 0
+	}
+	return false
+}
+
+
+// compare a hash (from DB with paswrord)
+func checkPasswordHash(password, hash string) bool {
+	err := bcrypt.CompareHashAndPassword([]byte(hash), []byte(password))
+	return err == nil
+}
+
+
+// hashPassword - this will hash the user's supplied password - for registration (initial storage)
+// and for user logins
+func hashPassword(password string) (string, error) {
+	bytes, err := bcrypt.GenerateFromPassword([]byte(password), 14)
+	return string(bytes), err
+}

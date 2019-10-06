@@ -6,15 +6,17 @@
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
     <link rel="stylesheet" href="../styles/styles.css">
     <script type="text/javascript" src="../scripts/boat-validation.js"></script>
-    <title>New Boat</title>
+    <title>Log In</title>
 </head>
 <body>
     {{template "menu"}}
     <div class="parentContainer">
         <div class="content">
-            <form action="/new-boat" method="POST">
-                <!-- TODO - make this validate -->
-                <input type="text" name="boatName" class="toValidate" placeholder="Boat Name">
+            {{.M}}
+            <form action="/login" method="POST">
+                <input type="text" name="uname" class="toValidate" placeholder="name@example.com"><br>
+                <input type="password" name="pwd" id="pwd" placeholder="Password"><br>
+                Remember Me?<input type="checkbox" name="persist" id="persist"><br>
                 <input type="submit" value="Submit">        
             </form>
         </div>

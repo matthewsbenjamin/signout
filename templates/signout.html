@@ -9,21 +9,24 @@
 </head>
 <body>
     {{template "menu"}}
-    <div class="signForm">
-        <form action="/signout" method="post">
-            <div class="boats">
-                <select name="boat" id="boat" size="24" required>
-                    {{range .BoatList}} <option value="{{.}}">{{.}}</option>{{end}}
-                </select>
-            </div>
-            <div class="adults">
-                    <select name="adult" id="adult" size="15" required>
-                        {{range .AdultList}} <option value="{{.}}">{{.}}</option>{{end}}
+    <div class="parentContainer">
+        <div class="content">
+            <form action="/signout" method="post">
+                <div class="selectParentContainer">
+                    <select name="boat" id="boat" size="24" required>
+                        <optgroup label="Select a boat to sign out"></optgroup>
+                        {{range .BoatList}} <option value="{{.}}">{{.}}</option>{{end}}
                     </select>
-            </div>
-            <input type="submit" value="Sign Out">
-        </form>
+
+                    <select name="adult" id="adult" size="24" required>
+                        <optgroup label="Select responsible individual"></optgroup>
+                            {{range .AdultList}} <option value="{{.}}">{{.}}</option>{{end}}
+                    </select>
+                </div>
+                <input class="submit" type="submit" value="Sign Out">
+            </form>
+        </div>
     </div>
+    {{template "copyright"}}
 </body>
-{{template "copyright"}}
 </html>

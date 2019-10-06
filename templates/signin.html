@@ -9,19 +9,25 @@
 </head>
 <body>
     {{template "menu"}}
-    <div class="signForm">
-        <form action="/signin" method="post">
-            <div class="boats">
-                <select name="boat" id="boat" size="24" required>
-                    {{range .BoatList}} <option value="{{.}}">{{.}}</option>{{end}}
-                </select>
-                
-                <textarea name="damage" id="damage" cols="30" rows="10" placeholder="Decribe any damage found or caused during the row"></textarea>
-                <textarea name="hazards" id="hazards" cols="30" rows="10" placeholder="Describe, and provide a location for, any hazards witnessed"></textarea>
+
+    <div class="parentContainer">
+            <div class="content">
+                <form action="/signin" method="post">
+                    <div class="selectParentContainer">
+                        <select name="boat" id="boat" size="24" required>
+                            <optgroup label="Select a boat to sign in"></optgroup>
+                                {{range .BoatList}} <option value="{{.}}">{{.}}</option>{{end}}
+                            </select>
+                    </div>
+        
+                    <div class="hazardDamageContainer">
+                        <textarea name="damage" id="damage" cols="30" rows="10" placeholder="Decribe any damage found or caused during the row"></textarea>
+                        <textarea name="hazards" id="hazards" cols="30" rows="10" placeholder="Describe, and provide a location for, any hazards witnessed"></textarea>
+                    </div>
+                    <input class="submit" type="submit" value="Sign In">
+                </form>
             </div>
-            <input type="submit" value="Sign In">
-        </form>
-    </div>
-</body>
-{{template "copyright"}}
-</html>
+        </div>
+        {{template "copyright"}}
+    </body>
+    </html>

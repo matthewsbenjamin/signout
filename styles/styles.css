@@ -1,14 +1,36 @@
 
 * {
-    font-size-adjust: 1;
     font-family: sans-serif;
-    /* background-color: darkgrey; */
-    margin: 2px;
+}
+
+html, body {
+    overflow: hidden;
+}
+
+body {
+    min-height: 100vh;
+    background-image: url("/img/img01.jpg");
+    background-position: center;
+    background-repeat: repeat;
+    background-size: auto;
 }
 
 h1 {
-    background-color: purple;
-    color: yellow;
+    color: purple;
+}
+
+.menu {
+    color: purple;
+    margin: 20px;
+    background-color: white;
+}
+
+a:link {
+    color: purple;
+}
+
+a:visited {
+    color: purple;
 }
 
 .mainNavigation {
@@ -16,11 +38,75 @@ h1 {
 }
 
 .copyright {
-    font-size-adjust: 0.6;
+    width: 100%;
+    font-size-adjust: 0.4;
     position: fixed;
     bottom: 0;
+    justify-content: right;
+    color: white;
 }
 
 .parentContainer {
     margin: auto;
+    height: 100%;
+}
+
+.content {
+    display: flex;
+    margin: 0;
+    align-items: center;
+    justify-content: center;
+}
+
+.selectParentContainer {
+    display: flex;
+    border: 1px;
+    min-width: 40%;
+}
+
+.selectParentContainer select {
+    display: flex;
+    min-width: 300px;
+    width: 100%;
+    margin: 20px;
+}
+
+
+.hazardDamageContainer {
+    display: flex;
+    margin: 1em auto 1em;
+}
+
+.hazardDamageContainer textarea {
+    margin: 20px;
+}
+
+.frontPage {
+    padding: 60px;
+    border-radius: 2%; 
+    display: flex;
+    flex-direction: column;
+    background-color: white;
+}
+
+form {
+    background-color: white;
+    padding: 60px;
+    border-radius: 2mm;
+    justify-content: right;
+}
+
+#clock {
+    margin:  10px;
+}
+
+.submit {
+    display: flex;
+    text-align: right;
+    float: right;
+    margin: 20px
+}
+
+textarea {
+    margin: 10px;
 }
