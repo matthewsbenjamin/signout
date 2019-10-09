@@ -2,41 +2,40 @@ package main
 
 import (
 	"database/sql"
+	"errors"
 	"fmt"
 	"html/template"
 	"io"
 	"log"
 	"net/http"
-	"errors"
 	"time"
 
 	_ "github.com/go-sql-driver/mysql"
-	"github.com/satori/go.uuid"
+	uuid "github.com/satori/go.uuid"
 	"golang.org/x/crypto/bcrypt"
-
+	// _ "config"
 )
 
 var tpl *template.Template
-var AUTH string = "admin:password@tcp(signout.crbqagbsfqi5.eu-west-2.rds.amazonaws.com:3306)/signout"
-var port string = ":8080"
-
 
 func init() {
 	tpl = template.Must(template.ParseGlob("templates/*"))
 
-	// User just holds a users information - does not persist because it's all 
-	// held in the database
-	type User struct {
-		Uid string
-		Club string
-	}
-
 	// non-persistent store of sessions
 	// var Sessions map[string]User
+
+	// get it to read the yaml config file
+
 }
 
-
 func main() {
+
+	var Conf interface{}
+
+	port := getYaml(Conf, "config/config.yaml")
+
+	//var port string = ":8080"
+	//Cred.User + ":" + Cred.Pwd + "@tcp(" + Cred.Endpoint + ")/" + Cred.DBname
 
 	// File serving
 	fs := http.FileServer(http.Dir("styles/"))
@@ -58,9 +57,8 @@ func main() {
 	http.HandleFunc("/login", loginHandler)
 	http.HandleFunc("/logout", logout)
 
-	
 	fmt.Printf("###################################\nRunning on port %s\n\n", port)
-	http.ListenAndServe(port, nil) // 
+	http.ListenAndServe(port, nil) //
 }
 
 func ping(w http.ResponseWriter, req *http.Request) {
@@ -78,9 +76,8 @@ func index(w http.ResponseWriter, req *http.Request) {
 
 }
 
-
 func logout(w http.ResponseWriter, req *http.Request) {
-	
+
 	if isLoggedIn(req) {
 		// do something with the cookie - remove and redirect to index
 		fmt.Println("user logged out")
@@ -108,7 +105,7 @@ func newUserGet(w http.ResponseWriter, req *http.Request) {
 
 func newUserPost(w http.ResponseWriter, req *http.Request) {
 
-	db, err := sql.Open("mysql", AUTH)
+	db, err := sql.Open("mysql", CRED)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -152,7 +149,7 @@ func signoutHandler(w http.ResponseWriter, req *http.Request) {
 
 func signoutPost(w http.ResponseWriter, req *http.Request) {
 
-	db, err := sql.Open("mysql", AUTH)
+	db, err := sql.Open("mysql", CRED)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -183,7 +180,7 @@ func signoutPost(w http.ResponseWriter, req *http.Request) {
 
 func signoutGet(w http.ResponseWriter, req *http.Request) {
 
-	db, err := sql.Open("mysql", AUTH)
+	db, err := sql.Open("mysql", CRED)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -239,7 +236,7 @@ func signinHandler(w http.ResponseWriter, req *http.Request) {
 
 func signinPost(w http.ResponseWriter, req *http.Request) {
 
-	db, err := sql.Open("mysql", AUTH)
+	db, err := sql.Open("mysql", CRED)
 	// TODO set this up for AWS
 	if err != nil {
 		log.Fatal(err)
@@ -273,7 +270,7 @@ func signinPost(w http.ResponseWriter, req *http.Request) {
 
 func signinGet(w http.ResponseWriter, req *http.Request) {
 
-	db, err := sql.Open("mysql", AUTH)
+	db, err := sql.Open("mysql", CRED)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -304,7 +301,7 @@ func signinGet(w http.ResponseWriter, req *http.Request) {
 
 func hazards(w http.ResponseWriter, req *http.Request) {
 
-	db, err := sql.Open("mysql", AUTH)
+	db, err := sql.Open("mysql", CRED)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -363,7 +360,7 @@ func newBoatPost(w http.ResponseWriter, req *http.Request) {
 
 	req.ParseForm()
 
-	db, err := sql.Open("mysql", AUTH)
+	db, err := sql.Open("mysql", CRED)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -385,7 +382,6 @@ func newBoatPost(w http.ResponseWriter, req *http.Request) {
 
 }
 
-
 // bool whether the user is logged in or not
 func isLoggedIn(req *http.Request) bool {
 
@@ -402,7 +398,7 @@ func isLoggedIn(req *http.Request) bool {
 	// if nil - then return false
 	// prevent injection somehow?
 
-	db, err := sql.Open("mysql", AUTH)
+	db, err := sql.Open("mysql", CRED)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -444,18 +440,16 @@ func loginPost(w http.ResponseWriter, req *http.Request) {
 	uname := req.FormValue("username")
 	pwd, err := hashPassword(req.FormValue("pwd"))
 	if err != nil {
-		http.Error(w, "Authentication error", 500)
+		http.Error(w, "CREDentication error", 500)
 	}
 	persist := req.FormValue("persist") == "on"
 
-
-	db, err := sql.Open("mysql", AUTH)
+	db, err := sql.Open("mysql", CRED)
 	if err != nil {
 		log.Fatal(err)
 	}
 	defer db.Close()
 
-	
 	// confirmation that pwd exists
 	// scan result into p
 	var c string
@@ -467,7 +461,7 @@ func loginPost(w http.ResponseWriter, req *http.Request) {
 
 	// get the result - r - of the password hash
 	r := bcrypt.CompareHashAndPassword([]byte(pwd), []byte(c))
-	
+
 	if r == nil { // unsuccesful password
 
 		M := errors.New("Error: Incorrect Password")
@@ -480,20 +474,20 @@ func loginPost(w http.ResponseWriter, req *http.Request) {
 		if err != nil {
 			http.Error(w, "UUID Failed", 500)
 		}
-	
+
 		cook := http.Cookie{
 			Name:  "sid",
 			Value: id.String(),
 			Path:  "/",
 		}
-	
+
 		if persist {
 			cook.MaxAge = int(365 * 24 * time.Hour)
 			http.SetCookie(w, &cook)
-	
+
 		} else {
 			http.SetCookie(w, &cook)
-	
+
 		}
 
 		stmt, err := db.Prepare("INSERT INTO sessions (sid, user) VALUES (?, ?)")
@@ -509,16 +503,15 @@ func loginPost(w http.ResponseWriter, req *http.Request) {
 	// now add this to the database of sid
 }
 
-
-// authenticate will return true if the user is logged in
+// CREDenticate will return true if the user is logged in
 // todo - enrich the return value OR create userData func to return logged in data
-func authenticate(req *http.Request) bool {
+func CREDenticate(req *http.Request) bool {
 
 	uid, err := req.Cookie("uid")
 	if err != http.ErrNoCookie {
 
 		// they already have a cookie
-		db, err := sql.Open("mysql", AUTH)
+		db, err := sql.Open("mysql", CRED)
 		if err != nil {
 			log.Fatal(err)
 		}
@@ -540,13 +533,11 @@ func authenticate(req *http.Request) bool {
 	return false
 }
 
-
 // compare a hash (from DB with paswrord)
 func checkPasswordHash(password, hash string) bool {
 	err := bcrypt.CompareHashAndPassword([]byte(hash), []byte(password))
 	return err == nil
 }
-
 
 // hashPassword - this will hash the user's supplied password - for registration (initial storage)
 // and for user logins
