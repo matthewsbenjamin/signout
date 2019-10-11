@@ -7,8 +7,8 @@ import (
 	"gopkg.in/yaml.v2"
 )
 
-//
-type Config struct {
+// Configs stores the database credentials
+type Configs struct {
 	Port string
 }
 
@@ -25,21 +25,21 @@ type Creds struct {
 	DB dbCred
 }
 
-// GetConfig this will return a struct of type config
-func GetConfig() Config {
+// Config this will return a struct of type config
+func Config() Configs {
 
 	var i interface{}
 
 	c := getYaml(i, "config/config.yaml")
 
-	C, _ := c.(Config)
+	C, _ := c.(Configs)
 
 	return C
 
 }
 
-// GetCreds will return a struct of creds
-func GetCreds() Creds {
+// Cred will return a struct of creds
+func Cred() Creds {
 
 	var i interface{}
 

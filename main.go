@@ -13,7 +13,6 @@ import (
 	_ "github.com/go-sql-driver/mysql"
 	uuid "github.com/satori/go.uuid"
 	"golang.org/x/crypto/bcrypt"
-	// _ "config"
 )
 
 var tpl *template.Template
@@ -30,12 +29,14 @@ func init() {
 
 func main() {
 
-	var Conf interface{}
+	config := Config()
 
-	port := getYaml(Conf, "config/config.yaml")
+	cred := Cred()
 
-	//var port string = ":8080"
-	//Cred.User + ":" + Cred.Pwd + "@tcp(" + Cred.Endpoint + ")/" + Cred.DBname
+	//var config.Port string = ":8080"
+	CRED := fmt.Sprintf("%s:%s@tcp(%s)/%s", cred.DB.User, cred.DB.Pwd, cred.DB.Endpoint, cred.DB.DBname)
+
+	fmt.Println(CRED)
 
 	// File serving
 	fs := http.FileServer(http.Dir("styles/"))
@@ -46,7 +47,7 @@ func main() {
 	http.Handle("/scripts/", http.StripPrefix("/scripts/", sc))
 	http.Handle("/favicon.ico", http.NotFoundHandler())
 
-	// Get or Port request handlers
+	// Get or config.Port request handlers
 	http.HandleFunc("/", index)
 	http.HandleFunc("/new-boat", newBoatHandler)
 	http.HandleFunc("/new-user", newUserHandler)
@@ -57,8 +58,8 @@ func main() {
 	http.HandleFunc("/login", loginHandler)
 	http.HandleFunc("/logout", logout)
 
-	fmt.Printf("###################################\nRunning on port %s\n\n", port)
-	http.ListenAndServe(port, nil) //
+	fmt.Printf("###################################\nRunning on config.Port %s\n\n", config.Port)
+	http.ListenAndServe(config.Port, nil) //
 }
 
 func ping(w http.ResponseWriter, req *http.Request) {
