@@ -16,9 +16,13 @@
                 <input type="text" name="name" id="name" placeholder="Name" required><br>
                 <input type="email" name="email" id="email" placeholder="Email Address" required class="toValidate"><br>
                 <input type="password" name="pwd" id="pwd" placeholder="Password" required><br>
-                <input type="password" name="pwc2" id="pwd2" placeholder="Password Confirmation" required><br>
+                <input type="password" name="pwd2" id="pwd2" placeholder="Password Confirmation" required><br>
+                <select name="club" id="club">
+                    <option value="Minerva">Minerva</option> <!-- turn this into a range thing-->
+                </select>
                 <input type="submit" value="Submit">        
             </form>
+            <p>For new club enquiries email <a href="mailto:admin@signout.com">admin@signout.com</a> </p>
         </div>
     </div>
     {{template "copyright"}}

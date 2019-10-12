@@ -32,7 +32,6 @@ func init() {
 	config.getConf()
 	dbCreds = cred.dbCred()
 
-	fmt.Println(dbCreds)
 }
 
 func main() {
@@ -58,6 +57,7 @@ func main() {
 	http.HandleFunc("/logout", logout)
 
 	fmt.Printf("###################################\nRunning on port: %s\n\n", config.Port)
+
 	http.ListenAndServe(config.Port, nil) //
 }
 
@@ -70,6 +70,7 @@ func index(w http.ResponseWriter, req *http.Request) {
 
 	if isLoggedIn(req) {
 		http.Redirect(w, req, "/login", http.StatusTemporaryRedirect)
+
 	}
 
 	tpl.ExecuteTemplate(w, "index.html", nil)
@@ -118,13 +119,25 @@ func newUserPost(w http.ResponseWriter, req *http.Request) {
 
 	email := req.FormValue("email")
 	name := req.FormValue("name")
+	pwd := req.FormValue("pwd")
+	pwdConf := req.FormValue("pwd2")
+	club := req.FormValue("club")
 
-	stmt, err := db.Prepare("INSERT INTO adults (email, name) VALUES (?, ?)")
+	if pwd != pwdConf {
+		// do something about it
+	}
+
+	pwdH, err := hashPassword(pwd)
+	if err != nil {
+		http.Error(w, "password hashing error", 500)
+	}
+
+	stmt, err := db.Prepare("INSERT INTO adults (email, name, pwd, club) VALUES (?, ?, ?, ?)")
 	if err != nil {
 		http.Error(w, "Statement preparation error", 500)
 	}
 
-	_, err = stmt.Exec(email, name)
+	_, err = stmt.Exec(email, name, pwdH, club)
 	if err != nil {
 		http.Error(w, "Statement execution error", 500)
 	}
@@ -174,7 +187,6 @@ func signoutPost(w http.ResponseWriter, req *http.Request) {
 	}
 
 	http.Redirect(w, req, "/", http.StatusTemporaryRedirect)
-	// TODO - Danger page
 
 }
 
@@ -256,7 +268,6 @@ func signinPost(w http.ResponseWriter, req *http.Request) {
 	boatname := req.FormValue("boat")
 	hazards := req.FormValue("hazards")
 	damage := req.FormValue("damage")
-	fmt.Println(boatname)
 
 	_, err = stmt.Exec(boatname, hazards, damage)
 	if err != nil {
@@ -390,7 +401,10 @@ func isLoggedIn(req *http.Request) bool {
 
 	c, err := req.Cookie("sid")
 
+	fmt.Println(c)
+
 	if err == http.ErrNoCookie {
+		fmt.Println("no sid found")
 		return false
 	}
 
@@ -406,6 +420,8 @@ func isLoggedIn(req *http.Request) bool {
 
 	var u string
 	err = db.QueryRow("SELECT user FROM sessions WHERE sid = '?'", c).Scan(&u)
+
+	fmt.Println(u)
 
 	return true
 }
@@ -453,7 +469,7 @@ func loginPost(w http.ResponseWriter, req *http.Request) {
 	// confirmation that pwd exists
 	// scan result into p
 	var c string
-	err = db.QueryRow("SELECT pwd FROM adults WHERE email = ? AND expired", pwd).Scan(&c)
+	err = db.QueryRow("SELECT pwd FROM adults WHERE email = ? AND expired = 0", pwd).Scan(&c)
 	if err == sql.ErrNoRows {
 		M := "Error: Username not found"
 		tpl.ExecuteTemplate(w, "login.html", M)
@@ -481,15 +497,16 @@ func loginPost(w http.ResponseWriter, req *http.Request) {
 			Path:  "/",
 		}
 
-		if persist {
+		if persist { // if the user has selected remember me - persistent cookie
 			cook.MaxAge = int(365 * 24 * time.Hour)
 			http.SetCookie(w, &cook)
 
-		} else {
+		} else { // forget me - session cookie
 			http.SetCookie(w, &cook)
 
 		}
 
+		// add this succesful login to the session database
 		stmt, err := db.Prepare("INSERT INTO sessions (sid, user) VALUES (?, ?)")
 		if err != nil {
 			http.Error(w, "Statement preparation failed", 500)
@@ -503,9 +520,10 @@ func loginPost(w http.ResponseWriter, req *http.Request) {
 	// now add this to the database of sid
 }
 
-// dbCredsenticate will return true if the user is logged in
+// authenticate will return true if the user is logged in
 // todo - enrich the return value OR create userData func to return logged in data
-func dbCredsenticate(req *http.Request) bool {
+// why is this needed - different from isLoggedIn?
+func authenticate(req *http.Request) bool {
 
 	uid, err := req.Cookie("uid")
 	if err != http.ErrNoCookie {
