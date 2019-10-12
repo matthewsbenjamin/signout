@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"io/ioutil"
 	"log"
 
@@ -9,63 +10,55 @@ import (
 
 // Configs stores the database credentials
 type Configs struct {
-	Port string
+	Port string `yaml:"port"`
 }
 
 type dbCred struct {
-	User     string
-	Pwd      string
-	Endpoint string
-	Port     string
-	DBname   string
+	User     string `yaml:"user"`
+	Pwd      string `yaml:"pwd"`
+	Endpoint string `yaml:"endpoint"`
+	Port     string `yaml:"port"`
+	DBname   string `yaml:"dbname"`
 }
 
 // Creds contains various credential information - primarily database
 type Creds struct {
-	DB dbCred
+	DB dbCred `yaml:"db"`
 }
 
-// Config this will return a struct of type config
-func Config() Configs {
+func (c *Configs) getConf() *Configs {
 
-	var i interface{}
-
-	c := getYaml(i, "config/config.yaml")
-
-	C, _ := c.(Configs)
-
-	return C
-
-}
-
-// Cred will return a struct of creds
-func Cred() Creds {
-
-	var i interface{}
-
-	c := getYaml(i, "config/creds.yaml")
-
-	C, _ := c.(Creds)
-
-	return C
-}
-
-func getYaml(s interface{}, f string) interface{} {
-
-	// s struct
-	// f file
-
-	file, err := ioutil.ReadFile(f)
+	file, err := ioutil.ReadFile("config/config.yaml")
 	if err != nil {
-		log.Fatal("Configuration file failed to open correctly")
+		log.Println(err)
+	}
+	err = yaml.Unmarshal(file, c)
+	if err != nil {
+		log.Println(err)
 	}
 
-	// unmarshal the file into the config struct
-	err = yaml.Unmarshal([]byte(file), &s)
+	return c
+}
+
+func (c *Creds) getCred() *Creds {
+
+	file, err := ioutil.ReadFile("config/cred.yaml")
 	if err != nil {
-		log.Fatal("Configuration file failed to parse correctly")
+		log.Println(err)
 	}
+	err = yaml.Unmarshal(file, c)
+	if err != nil {
+		log.Println(err)
+	}
+
+	return c
+}
+
+func (c *Creds) dbCred() string {
+
+	c.getCred()
+
+	s := fmt.Sprintf("%s:%s@tcp(%s)/%s", c.DB.User, c.DB.Pwd, c.DB.Endpoint, c.DB.DBname)
 
 	return s
-
 }

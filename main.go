@@ -16,27 +16,26 @@ import (
 )
 
 var tpl *template.Template
+var config Configs
+var cred Creds
+var dbCreds string
 
 func init() {
 	tpl = template.Must(template.ParseGlob("templates/*"))
 
 	// non-persistent store of sessions
 	// var Sessions map[string]User
-
 	// get it to read the yaml config file
 
+	// is this the best way to do this?
+
+	config.getConf()
+	dbCreds = cred.dbCred()
+
+	fmt.Println(dbCreds)
 }
 
 func main() {
-
-	config := Config()
-
-	cred := Cred()
-
-	//var config.Port string = ":8080"
-	CRED := fmt.Sprintf("%s:%s@tcp(%s)/%s", cred.DB.User, cred.DB.Pwd, cred.DB.Endpoint, cred.DB.DBname)
-
-	fmt.Println(CRED)
 
 	// File serving
 	fs := http.FileServer(http.Dir("styles/"))
@@ -58,7 +57,7 @@ func main() {
 	http.HandleFunc("/login", loginHandler)
 	http.HandleFunc("/logout", logout)
 
-	fmt.Printf("###################################\nRunning on config.Port %s\n\n", config.Port)
+	fmt.Printf("###################################\nRunning on port: %s\n\n", config.Port)
 	http.ListenAndServe(config.Port, nil) //
 }
 
@@ -106,7 +105,7 @@ func newUserGet(w http.ResponseWriter, req *http.Request) {
 
 func newUserPost(w http.ResponseWriter, req *http.Request) {
 
-	db, err := sql.Open("mysql", CRED)
+	db, err := sql.Open("mysql", dbCreds)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -150,7 +149,7 @@ func signoutHandler(w http.ResponseWriter, req *http.Request) {
 
 func signoutPost(w http.ResponseWriter, req *http.Request) {
 
-	db, err := sql.Open("mysql", CRED)
+	db, err := sql.Open("mysql", dbCreds)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -181,7 +180,7 @@ func signoutPost(w http.ResponseWriter, req *http.Request) {
 
 func signoutGet(w http.ResponseWriter, req *http.Request) {
 
-	db, err := sql.Open("mysql", CRED)
+	db, err := sql.Open("mysql", dbCreds)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -237,7 +236,7 @@ func signinHandler(w http.ResponseWriter, req *http.Request) {
 
 func signinPost(w http.ResponseWriter, req *http.Request) {
 
-	db, err := sql.Open("mysql", CRED)
+	db, err := sql.Open("mysql", dbCreds)
 	// TODO set this up for AWS
 	if err != nil {
 		log.Fatal(err)
@@ -271,7 +270,7 @@ func signinPost(w http.ResponseWriter, req *http.Request) {
 
 func signinGet(w http.ResponseWriter, req *http.Request) {
 
-	db, err := sql.Open("mysql", CRED)
+	db, err := sql.Open("mysql", dbCreds)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -302,7 +301,7 @@ func signinGet(w http.ResponseWriter, req *http.Request) {
 
 func hazards(w http.ResponseWriter, req *http.Request) {
 
-	db, err := sql.Open("mysql", CRED)
+	db, err := sql.Open("mysql", dbCreds)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -361,7 +360,7 @@ func newBoatPost(w http.ResponseWriter, req *http.Request) {
 
 	req.ParseForm()
 
-	db, err := sql.Open("mysql", CRED)
+	db, err := sql.Open("mysql", dbCreds)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -399,7 +398,7 @@ func isLoggedIn(req *http.Request) bool {
 	// if nil - then return false
 	// prevent injection somehow?
 
-	db, err := sql.Open("mysql", CRED)
+	db, err := sql.Open("mysql", dbCreds)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -441,11 +440,11 @@ func loginPost(w http.ResponseWriter, req *http.Request) {
 	uname := req.FormValue("username")
 	pwd, err := hashPassword(req.FormValue("pwd"))
 	if err != nil {
-		http.Error(w, "CREDentication error", 500)
+		http.Error(w, "dbCredsentication error", 500)
 	}
 	persist := req.FormValue("persist") == "on"
 
-	db, err := sql.Open("mysql", CRED)
+	db, err := sql.Open("mysql", dbCreds)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -504,15 +503,15 @@ func loginPost(w http.ResponseWriter, req *http.Request) {
 	// now add this to the database of sid
 }
 
-// CREDenticate will return true if the user is logged in
+// dbCredsenticate will return true if the user is logged in
 // todo - enrich the return value OR create userData func to return logged in data
-func CREDenticate(req *http.Request) bool {
+func dbCredsenticate(req *http.Request) bool {
 
 	uid, err := req.Cookie("uid")
 	if err != http.ErrNoCookie {
 
 		// they already have a cookie
-		db, err := sql.Open("mysql", CRED)
+		db, err := sql.Open("mysql", dbCreds)
 		if err != nil {
 			log.Fatal(err)
 		}
