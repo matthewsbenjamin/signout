@@ -43,6 +43,26 @@ func getUserFromSID(req *http.Request) (User, error) {
 
 }
 
+func getUserFromEmail(e string) (User, error) {
+
+	// using uid - compare w. database
+	db, err := sql.Open("mysql", dbCreds)
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer db.Close()
+
+	var u User
+	r := db.QueryRow("SELECT email, pwd, name, club, email_verified, club_verified FROM adults WHERE email = '?' AND active = 1", e)
+	// if err == sql.ErrNoRows {
+	// 	return u, errors.New("sid does not match")
+	// }
+
+	r.Scan(&u.Email, &u.Pwd, &u.Name, &u.Club, &u.EmailVerified, &u.ClubVerified)
+
+	return u, nil
+}
+
 func getClubs() []string {
 
 	db, err := sql.Open("mysql", dbCreds)

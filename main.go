@@ -68,7 +68,7 @@ func ping(w http.ResponseWriter, req *http.Request) {
 
 func index(w http.ResponseWriter, req *http.Request) {
 
-	if isLoggedIn(req) {
+	if !isLoggedIn(req) {
 		http.Redirect(w, req, "/login", http.StatusTemporaryRedirect)
 
 	}
@@ -81,7 +81,14 @@ func logout(w http.ResponseWriter, req *http.Request) {
 
 	if isLoggedIn(req) {
 		// do something with the cookie - remove and redirect to index
-		fmt.Println("user logged out")
+		c, err := req.Cookie("sid")
+		if err != nil {
+			http.Redirect(w, req, "/login", http.StatusTemporaryRedirect)
+			return
+		}
+
+		c.MaxAge = -1
+		http.SetCookie(w, c)
 	}
 
 	http.Redirect(w, req, "/", http.StatusTemporaryRedirect)
@@ -89,6 +96,10 @@ func logout(w http.ResponseWriter, req *http.Request) {
 }
 
 func newUserHandler(w http.ResponseWriter, req *http.Request) {
+
+	if !isLoggedIn(req) {
+		http.Redirect(w, req, "/login", http.StatusTemporaryRedirect)
+	}
 
 	if req.Method == http.MethodGet {
 		newUserGet(w, req)
@@ -146,6 +157,10 @@ func newUserPost(w http.ResponseWriter, req *http.Request) {
 }
 
 func signoutHandler(w http.ResponseWriter, req *http.Request) {
+
+	if !isLoggedIn(req) {
+		http.Redirect(w, req, "/login", http.StatusTemporaryRedirect)
+	}
 
 	if req.Method == http.MethodPost {
 		// Parse form
@@ -236,6 +251,10 @@ func signoutGet(w http.ResponseWriter, req *http.Request) {
 
 func signinHandler(w http.ResponseWriter, req *http.Request) {
 
+	if !isLoggedIn(req) {
+		http.Redirect(w, req, "/login", http.StatusTemporaryRedirect)
+	}
+
 	if req.Method == http.MethodPost {
 		signinPost(w, req)
 	}
@@ -312,6 +331,10 @@ func signinGet(w http.ResponseWriter, req *http.Request) {
 
 func hazards(w http.ResponseWriter, req *http.Request) {
 
+	if !isLoggedIn(req) {
+		http.Redirect(w, req, "/login", http.StatusTemporaryRedirect)
+	}
+
 	db, err := sql.Open("mysql", dbCreds)
 	if err != nil {
 		log.Fatal(err)
@@ -349,6 +372,10 @@ func hazards(w http.ResponseWriter, req *http.Request) {
 }
 
 func newBoatHandler(w http.ResponseWriter, req *http.Request) {
+
+	if !isLoggedIn(req) {
+		http.Redirect(w, req, "/login", http.StatusTemporaryRedirect)
+	}
 
 	// Change this so that only admin people can sign in
 	// Cookies etc
@@ -468,15 +495,21 @@ func loginPost(w http.ResponseWriter, req *http.Request) {
 
 	// confirmation that pwd exists
 	// scan result into p
-	var c string
-	err = db.QueryRow("SELECT pwd FROM adults WHERE email = ? AND expired = 0", pwd).Scan(&c)
-	if err == sql.ErrNoRows {
-		M := "Error: Username not found"
-		tpl.ExecuteTemplate(w, "login.html", M)
+	// TODO change this for getUserFromEmail()
+	c, err := getUserFromEmail(uname)
+	if err != nil {
+		// password error - redirect to /login
+		http.Redirect(w, req, "/login", http.StatusTemporaryRedirect)
 	}
 
 	// get the result - r - of the password hash
-	r := bcrypt.CompareHashAndPassword([]byte(pwd), []byte(c))
+	// ok so this isn't the password
+	r, err := bcrypt.CompareHashAndPassword([]byte(pwd), []byte(c.Pwd))
+	if err == bcrypt.ErrMismatchedHashAndPassword {
+		http.Redirect(w, req, "/login", http.StatusTemporaryRedirect)
+	}
+
+	fmt.Printf("uname:\t%s\npwd:\t%s\npersist:\t%t\n", uname, r, persist)
 
 	if r == nil { // unsuccesful password
 
