@@ -1,3 +1,5 @@
 *.pem
 *.yaml
-
+signout
+node_modules
+dist
