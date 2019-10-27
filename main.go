@@ -2,7 +2,6 @@ package main
 
 import (
 	"database/sql"
-	"errors"
 	"fmt"
 	"html/template"
 	"io"
@@ -138,7 +137,7 @@ func newUserPost(w http.ResponseWriter, req *http.Request) {
 		// do something about it
 	}
 
-	pwdH, err := hashPassword(pwd)
+	pwdH, err := bcrypt.GenerateFromPassword([]byte(pwd), bcrypt.DefaultCost)
 	if err != nil {
 		http.Error(w, "password hashing error", 500)
 	}
@@ -455,10 +454,10 @@ func isLoggedIn(req *http.Request) bool {
 
 func loginHandler(w http.ResponseWriter, req *http.Request) {
 
-	// if the user is logged in already - rdr index
-	if isLoggedIn(req) {
-		http.Redirect(w, req, "/", http.StatusTemporaryRedirect)
-	}
+	// // if the user is logged in already - rdr index
+	// if isLoggedIn(req) {
+	// 	http.Redirect(w, req, "/", http.StatusTemporaryRedirect)
+	// }
 
 	if req.Method == http.MethodGet {
 		loginGet(w, req, nil)
@@ -480,18 +479,9 @@ func loginPost(w http.ResponseWriter, req *http.Request) {
 	// parse form
 	req.ParseForm()
 
-	uname := req.FormValue("username")
-	pwd, err := hashPassword(req.FormValue("pwd"))
-	if err != nil {
-		http.Error(w, "dbCredsentication error", 500)
-	}
+	uname := req.FormValue("uname")
+	pwd := req.FormValue("pwd")
 	persist := req.FormValue("persist") == "on"
-
-	db, err := sql.Open("mysql", dbCreds)
-	if err != nil {
-		log.Fatal(err)
-	}
-	defer db.Close()
 
 	// confirmation that pwd exists
 	// scan result into p
@@ -504,20 +494,13 @@ func loginPost(w http.ResponseWriter, req *http.Request) {
 
 	// get the result - r - of the password hash
 	// ok so this isn't the password
-	r, err := bcrypt.CompareHashAndPassword([]byte(pwd), []byte(c.Pwd))
+	err = bcrypt.CompareHashAndPassword([]byte(pwd), []byte(c.Pwd))
 	if err == bcrypt.ErrMismatchedHashAndPassword {
-		http.Redirect(w, req, "/login", http.StatusTemporaryRedirect)
-	}
-
-	fmt.Printf("uname:\t%s\npwd:\t%s\npersist:\t%t\n", uname, r, persist)
-
-	if r == nil { // unsuccesful password
-
-		M := errors.New("Error: Incorrect Password")
-		tpl.ExecuteTemplate(w, "login.html", M)
-
+		fmt.Println("Mismatched password")
+		http.Redirect(w, req, "/loginfail", http.StatusTemporaryRedirect)
 	} else { // succesful password
 
+		fmt.Println("\nSuccesful password")
 		// set a cookie - sid
 		id, err := uuid.NewV4()
 		if err != nil {
@@ -539,6 +522,12 @@ func loginPost(w http.ResponseWriter, req *http.Request) {
 
 		}
 
+		db, err := sql.Open("mysql", dbCreds)
+		if err != nil {
+			log.Fatal(err)
+		}
+		defer db.Close()
+
 		// add this succesful login to the session database
 		stmt, err := db.Prepare("INSERT INTO sessions (sid, user) VALUES (?, ?)")
 		if err != nil {
@@ -550,7 +539,6 @@ func loginPost(w http.ResponseWriter, req *http.Request) {
 			http.Error(w, "Statement execution failed", 500)
 		}
 	}
-	// now add this to the database of sid
 }
 
 // authenticate will return true if the user is logged in
@@ -582,17 +570,4 @@ func authenticate(req *http.Request) bool {
 		return ct > 0
 	}
 	return false
-}
-
-// compare a hash (from DB with paswrord)
-func checkPasswordHash(password, hash string) bool {
-	err := bcrypt.CompareHashAndPassword([]byte(hash), []byte(password))
-	return err == nil
-}
-
-// hashPassword - this will hash the user's supplied password - for registration (initial storage)
-// and for user logins
-func hashPassword(password string) (string, error) {
-	bytes, err := bcrypt.GenerateFromPassword([]byte(password), 14)
-	return string(bytes), err
 }
