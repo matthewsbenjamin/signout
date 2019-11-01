@@ -2,9 +2,9 @@ package main
 
 import (
 	"database/sql"
-	"fmt"
 	"log"
 	"net/http"
+	"strings"
 	"time"
 
 	uuid "github.com/satori/go.uuid"
@@ -18,10 +18,10 @@ func isLoggedIn(req *http.Request) bool {
 	// if there's no sid cookie -- redirect to login page
 
 	c, err := req.Cookie("sid")
-
 	if err == http.ErrNoCookie {
 		return false
 	}
+	sid := strings.Split(c.String(), "=")[1]
 
 	// query the database with the UID
 	// if nil - then return false
@@ -34,12 +34,10 @@ func isLoggedIn(req *http.Request) bool {
 	defer db.Close()
 
 	var u string
-	err = db.QueryRow("SELECT user FROM sessions WHERE sid = ?", c).Scan(&u)
+	err = db.QueryRow("SELECT user FROM sessions WHERE sid = ?", sid).Scan(&u)
 	if err == sql.ErrNoRows {
-		fmt.Println(err)
 		return false
 	} else if err != nil {
-		fmt.Println(err)
 		return false
 	}
 
@@ -79,15 +77,15 @@ func authenticate(req *http.Request) bool {
 
 func loginGet(w http.ResponseWriter, req *http.Request, e error) {
 
-	// type Page struct {
-	// 	LoggedIn bool
-	// }
+	type Page struct {
+		LoggedIn bool
+	}
 
-	// pageData := Page{
-	// 	LoggedIn: false,
-	// }
+	pageData := Page{
+		LoggedIn: false,
+	}
 
-	tpl.ExecuteTemplate(w, "login.html", nil)
+	tpl.ExecuteTemplate(w, "login.html", pageData)
 
 }
 
@@ -118,7 +116,6 @@ func loginPost(w http.ResponseWriter, req *http.Request) {
 		http.Redirect(w, req, "/loginfail", http.StatusTemporaryRedirect)
 	} else { // succesful password
 
-		fmt.Println("Succesful login")
 		// set a cookie - sid
 		i, err := uuid.NewV4()
 		if err != nil {
@@ -158,22 +155,22 @@ func loginPost(w http.ResponseWriter, req *http.Request) {
 			http.Error(w, "Statement execution failed", 500)
 		}
 	}
+
+	http.Redirect(w, req, "/", http.StatusTemporaryRedirect)
 }
 
 func logout(w http.ResponseWriter, req *http.Request) {
 
-	if isLoggedIn(req) {
-		// do something with the cookie - remove and redirect to index
-		c, err := req.Cookie("sid")
-		if err != nil {
-			fmt.Println("cookie error")
-			http.Redirect(w, req, "/login", http.StatusTemporaryRedirect)
-			return
-		}
+	// do something with the cookie - remove and redirect to index
+	c, err := req.Cookie("sid")
 
-		c.MaxAge = 0
-		http.SetCookie(w, c)
+	if err != nil {
+		http.Redirect(w, req, "/login", http.StatusTemporaryRedirect)
+		return
 	}
+
+	c.MaxAge = -1
+	http.SetCookie(w, c)
 
 	http.Redirect(w, req, "/", http.StatusTemporaryRedirect)
 

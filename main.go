@@ -65,8 +65,17 @@ func index(w http.ResponseWriter, req *http.Request) {
 	if !isLoggedIn(req) {
 		http.Redirect(w, req, "/login", http.StatusTemporaryRedirect)
 
-	}
+	} else {
 
-	tpl.ExecuteTemplate(w, "index.html", nil)
+		type Page struct {
+			IsLoggedIn bool
+		}
+
+		pageData := Page{
+			IsLoggedIn: true,
+		}
+
+		tpl.ExecuteTemplate(w, "index.html", pageData)
+	}
 
 }

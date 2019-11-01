@@ -67,13 +67,15 @@ func signoutGet(w http.ResponseWriter, req *http.Request) {
 	}
 
 	type page struct {
-		BoatList  []string
-		AdultList []string
+		BoatList   []string
+		AdultList  []string
+		IsLoggedIn bool
 	}
 
 	pageData := page{
-		BoatList:  boats,
-		AdultList: adults,
+		BoatList:   boats,
+		AdultList:  adults,
+		IsLoggedIn: true,
 	}
 
 	tpl.ExecuteTemplate(w, "signout.html", pageData)
@@ -133,11 +135,13 @@ func signinGet(w http.ResponseWriter, req *http.Request) {
 	}
 
 	type page struct {
-		BoatList []string
+		BoatList   []string
+		IsLoggedIn bool
 	}
 
 	pageData := page{
-		BoatList: boats,
+		BoatList:   boats,
+		IsLoggedIn: true,
 	}
 
 	tpl.ExecuteTemplate(w, "signin.html", pageData)

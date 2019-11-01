@@ -1,7 +1,7 @@
 {{define "menu"}}
 <div class="menu">
 <h1> <a href="/">Shell Signout</a></h1>
-    {{ if .LoggedIn}} 
+    {{if .IsLoggedIn}} 
     <div class=""><a href="/">Minerva Boat Signout </a></h1>
         <a href="/new-user">New User</a>
         <a href="/new-boat">New Boat</a>
@@ -11,9 +11,6 @@
         <!-- This needs to be right aligned -->
         <a href="/logout">Log Out</a>
     </div>
-    {{else}}
-        <a href="/login">Log In</a>
-        <a href="/new-user">Register</a>
     {{end}}
 </div>
 {{end}}
