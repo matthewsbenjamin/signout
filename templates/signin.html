@@ -14,7 +14,7 @@
             <div class="content">
                 <form action="/signin" method="post">
                     <div class="selectParentContainer">
-                        <select name="boat" id="boat" size="24" required>
+                        <select name="boat" id="boat" size="20" required>
                             <optgroup label="Select a boat to sign in"></optgroup>
                                 {{range .BoatList}} <option value="{{.}}">{{.}}</option>{{end}}
                             </select>

@@ -10,21 +10,7 @@ import (
 
 func newBoatGet(w http.ResponseWriter, req *http.Request) {
 
-	if !isLoggedIn(req) {
-		http.Redirect(w, req, "/login", http.StatusTemporaryRedirect)
-
-	} else {
-
-		type Page struct {
-			IsLoggedIn bool
-		}
-
-		pageData := Page{
-			IsLoggedIn: true,
-		}
-
-		tpl.ExecuteTemplate(w, "new-boat.html", pageData)
-	}
+	tpl.ExecuteTemplate(w, "new-boat.html", nil)
 
 }
 
@@ -56,21 +42,7 @@ func newBoatPost(w http.ResponseWriter, req *http.Request) {
 
 func newUserGet(w http.ResponseWriter, req *http.Request) {
 
-	if !isLoggedIn(req) {
-		http.Redirect(w, req, "/login", http.StatusTemporaryRedirect)
-
-	} else {
-
-		type Page struct {
-			IsLoggedIn bool
-		}
-
-		pageData := Page{
-			IsLoggedIn: true,
-		}
-
-		tpl.ExecuteTemplate(w, "new-user.html", pageData)
-	}
+	tpl.ExecuteTemplate(w, "new-user.html", nil)
 
 }
 

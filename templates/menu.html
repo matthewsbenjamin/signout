@@ -1,16 +1,10 @@
 {{define "menu"}}
 <div class="menu">
 <h1> <a href="/">Shell Signout</a></h1>
-    {{if .IsLoggedIn}} 
-    <div class=""><a href="/">Minerva Boat Signout </a></h1>
-        <a href="/new-user">New User</a>
         <a href="/new-boat">New Boat</a>
         <a href="/hazards">Hazards</a>
+        <a href="/club">Club</a>
+        <a href="/profile">Profile</a>
     </div>
-    <div class="session-mgmt">
-        <!-- This needs to be right aligned -->
-        <a href="/logout">Log Out</a>
-    </div>
-    {{end}}
 </div>
 {{end}}

@@ -77,15 +77,7 @@ func authenticate(req *http.Request) bool {
 
 func loginGet(w http.ResponseWriter, req *http.Request, e error) {
 
-	type Page struct {
-		LoggedIn bool
-	}
-
-	pageData := Page{
-		LoggedIn: false,
-	}
-
-	tpl.ExecuteTemplate(w, "login.html", pageData)
+	tpl.ExecuteTemplate(w, "login.html", nil)
 
 }
 

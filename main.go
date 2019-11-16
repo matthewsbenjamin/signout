@@ -50,7 +50,7 @@ func main() {
 	http.HandleFunc("/login", loginHandler)
 	http.HandleFunc("/logout", logout)
 
-	fmt.Printf("###################################\nRunning on port - %s\n\n", config.Port)
+	fmt.Printf("###################################\nRunning on port %s\n\n", config.Port)
 
 	http.ListenAndServe(config.Port, nil) //
 }
@@ -64,18 +64,8 @@ func index(w http.ResponseWriter, req *http.Request) {
 
 	if !isLoggedIn(req) {
 		http.Redirect(w, req, "/login", http.StatusTemporaryRedirect)
-
-	} else {
-
-		type Page struct {
-			IsLoggedIn bool
-		}
-
-		pageData := Page{
-			IsLoggedIn: true,
-		}
-
-		tpl.ExecuteTemplate(w, "index.html", pageData)
 	}
+
+	tpl.ExecuteTemplate(w, "index.html", nil)
 
 }

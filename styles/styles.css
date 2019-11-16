@@ -21,7 +21,9 @@ h1 {
 
 .menu {
     color: purple;
-    margin: 20px;
+    margin-bottom: 30px;
+    padding: 20px;
+    border-radius: 2%;
     background-color: white;
 }
 
