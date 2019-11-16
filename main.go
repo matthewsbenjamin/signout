@@ -31,12 +31,10 @@ func init() {
 func main() {
 
 	// File serving
-	fs := http.FileServer(http.Dir("styles/"))
-	http.Handle("/styles/", http.StripPrefix("/styles/", fs))
+	fs := http.FileServer(http.Dir("dist/"))
+	http.Handle("/dist/", http.StripPrefix("/dist/", fs))
 	img := http.FileServer(http.Dir("img/"))
 	http.Handle("/img/", http.StripPrefix("/img/", img))
-	sc := http.FileServer(http.Dir("scripts/"))
-	http.Handle("/scripts/", http.StripPrefix("/scripts/", sc))
 	http.Handle("/favicon.ico", http.NotFoundHandler())
 
 	// Get or config.Port request handlers

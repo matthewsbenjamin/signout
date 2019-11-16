@@ -1,0 +1,21 @@
+{
+  "name": "signout",
+  "version": "0.0.1",
+  "description": "Boat Signout",
+  "main": "index.js",
+  "repository": "git@github.com:matthewsbenjamin/signout.git",
+  "author": "Luke Xavier Symington <lukexaviersymington@gmail.com>",
+  "license": "MIT",
+  "private": false,
+  "scripts": {
+    "build": "webpack"
+  },
+  "devDependencies": {
+    "css-loader": "^3.2.0",
+    "mini-css-extract-plugin": "^0.8.0",
+    "node-sass": "^4.13.0",
+    "sass-loader": "^8.0.0",
+    "webpack": "^4.41.2",
+    "webpack-cli": "^3.3.10"
+  }
+}
