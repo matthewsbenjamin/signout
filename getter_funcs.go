@@ -36,10 +36,10 @@ func getUserFromSID(req *http.Request) (User, error) {
 	defer db.Close()
 
 	var u User
-	r := db.QueryRow("SELECT email, name, club, pwd, email_verified, club_verified FROM sessions WHERE sid = '?' AND active = 1", c)
-	// if err == sql.ErrNoRows {
-	// 	return u, errors.New("sid does not match")
-	// }
+	r := db.QueryRow("SELECT `email`, `name`, `club`, `pwd`, `email_verified`, `club_verified` FROM sessions INNER JOIN adults ON sessions.user = adults.email WHERE sessions.sid = ?", c.Value)
+	if err == sql.ErrNoRows {
+		return u, errors.New("sid does not match anything")
+	}
 
 	r.Scan(&u.Email, &u.Name, &u.Club, &u.Pwd, &u.EmailVerified, &u.ClubVerified)
 

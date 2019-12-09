@@ -2,6 +2,7 @@ package main
 
 import (
 	"database/sql"
+	"fmt"
 	"log"
 	"net/http"
 )
@@ -14,7 +15,7 @@ func signoutPost(w http.ResponseWriter, req *http.Request) {
 	}
 	defer db.Close()
 
-	stmt, err := db.Prepare("INSERT INTO transactions (boat_name, adult, signout) VALUES (?, ?, TRUE)")
+	stmt, err := db.Prepare("INSERT INTO transactions (boat_name, adult, signout, club) VALUES (?, ?, TRUE, ?)")
 	if err != nil {
 		http.Error(w, "Statement preparation error", 500)
 	}
@@ -24,10 +25,17 @@ func signoutPost(w http.ResponseWriter, req *http.Request) {
 		http.Error(w, "Login form parse error", 500)
 	}
 
+	u, err := getUserFromSID(req)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	fmt.Printf("User is: %v\n", u)
+
 	boatname := req.FormValue("boat")
 	adult := req.FormValue("adult")
 
-	_, err = stmt.Exec(boatname, adult)
+	_, err = stmt.Exec(boatname, adult, u.Club)
 	if err != nil {
 		http.Error(w, "Statement execution error", 500)
 	}
@@ -44,9 +52,14 @@ func signoutGet(w http.ResponseWriter, req *http.Request) {
 	}
 	defer db.Close()
 
+	u, err := getUserFromSID(req)
+	if err != nil {
+		http.Error(w, "Signout get user from si failed", 401)
+	}
+
 	var adults []string
 	var adult string
-	rows, err := db.Query("SELECT name FROM adults WHERE active = 1 ORDER BY name ASC")
+	rows, err := db.Query("SELECT name FROM adults WHERE active = 1 AND club = ? ORDER BY name ASC", u.Club)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -57,7 +70,7 @@ func signoutGet(w http.ResponseWriter, req *http.Request) {
 
 	var boats []string
 	var boat string
-	brows, err := db.Query("SELECT boat_name FROM boat_locations WHERE on_water = 0 ORDER BY boat_name ASC")
+	brows, err := db.Query("SELECT boat_name FROM boat_locations WHERE on_water = 0 AND club = ? ORDER BY boat_name ASC", u.Club)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -85,13 +98,13 @@ func signoutGet(w http.ResponseWriter, req *http.Request) {
 func signinPost(w http.ResponseWriter, req *http.Request) {
 
 	db, err := sql.Open("mysql", dbCreds)
-	// TODO set this up for AWS
 	if err != nil {
 		log.Fatal(err)
 	}
 	defer db.Close()
 
-	stmt, err := db.Prepare("INSERT INTO transactions (boat_name, hazards, damage) VALUES (?, ?, ?)")
+	// TODO add the users club - use getUserFromSID()
+	stmt, err := db.Prepare("INSERT INTO transactions (boat_name, hazards, damage, club) VALUES (?, ?, ?, ?)")
 	if err != nil {
 		http.Error(w, "Statement preparation error", 500)
 	}
@@ -101,11 +114,16 @@ func signinPost(w http.ResponseWriter, req *http.Request) {
 		http.Error(w, "Login form parse error", 500)
 	}
 
+	u, err := getUserFromSID(req)
+	if err != nil {
+		log.Fatal(err)
+	}
+
 	boatname := req.FormValue("boat")
 	hazards := req.FormValue("hazards")
 	damage := req.FormValue("damage")
 
-	_, err = stmt.Exec(boatname, hazards, damage)
+	_, err = stmt.Exec(boatname, hazards, damage, u.Club)
 	if err != nil {
 		http.Error(w, "Statement execution error", 500)
 	}
@@ -123,9 +141,14 @@ func signinGet(w http.ResponseWriter, req *http.Request) {
 	}
 	defer db.Close()
 
+	u, err := getUserFromSID(req)
+	if err != nil {
+		http.Error(w, "Signin get user from sid failed", 401)
+	}
+
 	var boats []string
 	var boat string
-	brows, err := db.Query("SELECT boat_name FROM boat_locations WHERE on_water = 1 ORDER BY boat_name ASC")
+	brows, err := db.Query("SELECT boat_name FROM boat_locations WHERE on_water = 1 AND club = ? ORDER BY boat_name ASC", u.Club)
 	if err != nil {
 		log.Fatal(err)
 	}

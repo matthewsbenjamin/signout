@@ -50,6 +50,9 @@ func main() {
 	http.HandleFunc("/login", loginHandler)
 	http.HandleFunc("/logout", logout)
 
+	// API
+	http.HandleFunc("/api/users/{username}", )
+
 	fmt.Printf("###################################\nRunning on port %s\n\n", config.Port)
 
 	http.ListenAndServe(config.Port, nil) //

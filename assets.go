@@ -2,6 +2,7 @@ package main
 
 import (
 	"database/sql"
+	"fmt"
 	"log"
 	"net/http"
 
@@ -24,14 +25,21 @@ func newBoatPost(w http.ResponseWriter, req *http.Request) {
 	}
 	defer db.Close()
 
-	stmt, err := db.Prepare("INSERT INTO boat_locations (boat_name) VALUES (?);")
+	stmt, err := db.Prepare("INSERT INTO boat_locations (boat_name, club) VALUES (?, ?)")
 	if err != nil {
 		log.Fatal(err)
 	}
 
 	b := req.FormValue("boatName")
 
-	_, err = stmt.Exec(b)
+	u, err := getUserFromSID(req)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	fmt.Printf("User is: %v\n", u)
+
+	_, err = stmt.Exec(b, u.Club)
 	if err != nil {
 		log.Fatal(err)
 	}
