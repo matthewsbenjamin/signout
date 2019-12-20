@@ -25,7 +25,7 @@ func signoutPost(w http.ResponseWriter, req *http.Request) {
 		http.Error(w, "Login form parse error", 500)
 	}
 
-	u, err := getUserFromSID(req)
+	u, err := getUserFromRequest(req)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -52,7 +52,7 @@ func signoutGet(w http.ResponseWriter, req *http.Request) {
 	}
 	defer db.Close()
 
-	u, err := getUserFromSID(req)
+	u, err := getUserFromRequest(req)
 	if err != nil {
 		http.Error(w, "Signout get user from si failed", 401)
 	}
@@ -103,7 +103,7 @@ func signinPost(w http.ResponseWriter, req *http.Request) {
 	}
 	defer db.Close()
 
-	// TODO add the users club - use getUserFromSID()
+	// TODO add the users club - use getUserFromRequest()
 	stmt, err := db.Prepare("INSERT INTO transactions (boat_name, hazards, damage, club) VALUES (?, ?, ?, ?)")
 	if err != nil {
 		http.Error(w, "Statement preparation error", 500)
@@ -114,7 +114,7 @@ func signinPost(w http.ResponseWriter, req *http.Request) {
 		http.Error(w, "Login form parse error", 500)
 	}
 
-	u, err := getUserFromSID(req)
+	u, err := getUserFromRequest(req)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -141,7 +141,7 @@ func signinGet(w http.ResponseWriter, req *http.Request) {
 	}
 	defer db.Close()
 
-	u, err := getUserFromSID(req)
+	u, err := getUserFromRequest(req)
 	if err != nil {
 		http.Error(w, "Signin get user from sid failed", 401)
 	}

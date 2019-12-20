@@ -32,7 +32,7 @@ func newBoatPost(w http.ResponseWriter, req *http.Request) {
 
 	b := req.FormValue("boatName")
 
-	u, err := getUserFromSID(req)
+	u, err := getUserFromRequest(req)
 	if err != nil {
 		log.Fatal(err)
 	}

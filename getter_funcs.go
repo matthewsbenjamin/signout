@@ -2,8 +2,6 @@ package main
 
 import (
 	"database/sql"
-	"errors"
-	"fmt"
 	"log"
 	"net/http"
 
@@ -20,7 +18,7 @@ type User struct {
 	ClubVerified  bool
 }
 
-func getUserFromSID(req *http.Request) (User, error) {
+func getUserFromRequest(req *http.Request) (User, error) {
 
 	c, err := req.Cookie("sid")
 	if err != nil {
@@ -37,19 +35,17 @@ func getUserFromSID(req *http.Request) (User, error) {
 
 	var u User
 	r := db.QueryRow("SELECT `email`, `name`, `club`, `pwd`, `email_verified`, `club_verified` FROM sessions INNER JOIN adults ON sessions.user = adults.email WHERE sessions.sid = ?", c.Value)
-	if err == sql.ErrNoRows {
-		return u, errors.New("sid does not match anything")
-	}
+	err = r.Scan(&u.Email, &u.Name, &u.Club, &u.Pwd, &u.EmailVerified, &u.ClubVerified)
 
-	r.Scan(&u.Email, &u.Name, &u.Club, &u.Pwd, &u.EmailVerified, &u.ClubVerified)
+	if err != nil {
+		return u, err
+	}
 
 	return u, nil
 
 }
 
 func getUserFromEmail(e string) (User, error) {
-
-	fmt.Println(e)
 
 	// using uid - compare w. database
 	db, err := sql.Open("mysql", dbCreds)
@@ -60,16 +56,16 @@ func getUserFromEmail(e string) (User, error) {
 
 	var u User
 	r := db.QueryRow("SELECT email, pwd, name, club, email_verified, club_verified FROM adults WHERE email = ?", e)
-	if err == sql.ErrNoRows {
-		return u, errors.New("sid does not match a valid user")
-	}
 
-	if err != nil {
-		fmt.Println(err)
+	err = r.Scan(&u.Email, &u.Pwd, &u.Name, &u.Club, &u.EmailVerified, &u.ClubVerified)
+
+	if err == sql.ErrNoRows {
 		return u, err
 	}
 
-	r.Scan(&u.Email, &u.Pwd, &u.Name, &u.Club, &u.EmailVerified, &u.ClubVerified)
+	if err != nil {
+		return u, err
+	}
 
 	return u, nil
 }
@@ -95,4 +91,30 @@ func getClubs() []string {
 
 	return clubs
 
+}
+
+// Boat is a boat
+// note the issue with pulling the 'current' status from the db - easily overridden
+type Boat struct {
+	Name string
+	Club string
+}
+
+func getBoatDetails(b, c string) (Boat, error) {
+
+	db, err := sql.Open("mysql", dbCreds)
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer db.Close()
+
+	r := db.QueryRow("SELECT boat_name, club FROM boat_locations WHERE boat_name = ? AND club = ?", b, c)
+
+	var B Boat
+	err = r.Scan(&B.Name, &B.Club)
+	if err != nil {
+		return B, err
+	}
+
+	return B, nil
 }

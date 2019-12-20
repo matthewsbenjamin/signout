@@ -51,7 +51,7 @@ func main() {
 	http.HandleFunc("/logout", logout)
 
 	// API
-	http.HandleFunc("/api/users/{username}", )
+	http.HandleFunc("/api/", apiHandler)
 
 	fmt.Printf("###################################\nRunning on port %s\n\n", config.Port)
 
