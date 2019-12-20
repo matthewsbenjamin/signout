@@ -10,6 +10,8 @@ import (
 // probably as /api?user=email@example.com
 func apiHandler(w http.ResponseWriter, req *http.Request) {
 
+	// TODO add validation to this user request. Fail if validation doesn't work
+
 	err := req.ParseForm()
 	if err != nil {
 		//fmt.Println(err)
