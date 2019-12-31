@@ -118,3 +118,32 @@ func getBoatDetails(b, c string) (Boat, error) {
 
 	return B, nil
 }
+
+func getClubBoats(c string) ([]Boat, error) {
+
+	db, err := sql.Open("mysql", dbCreds)
+	if err != nil {
+		return nil, err
+	}
+	defer db.Close()
+
+	stmt, _ := db.Prepare("SELECT boat_name, club FROM boat_locations WHERE club = ?")
+	if err != nil {
+		return nil, err
+	}
+	defer stmt.Close()
+
+	r, err := stmt.Query(c)
+	if err != nil {
+		return nil, err
+	}
+
+	var B Boat
+	var Boats []Boat
+	for r.Next() {
+		err = r.Scan(&B.Name, &B.Club)
+		Boats = append(Boats, B)
+	}
+
+	return Boats, nil
+}

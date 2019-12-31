@@ -1,35 +1,29 @@
 package main
 
 import (
+	"encoding/json"
 	"fmt"
-	"io"
 	"net/http"
 )
 
-// coming in as /api?key=value&otherKey=otherValue
-// probably as /api?user=email@example.com
 func apiHandler(w http.ResponseWriter, req *http.Request) {
 
-	// TODO add validation to this user request. Fail if validation doesn't work
+	// there should be some kind of validation here - preventing unverified users
+	// from accessing api
 
 	err := req.ParseForm()
 	if err != nil {
-		//fmt.Println(err)
+		fmt.Println(err)
 	}
 
 	q := req.URL.Query()
+	// if err != nil {
+	// 	fmt.Println(err)
+	// }
 
-	// is this
-	if _, ok := q["user"]; ok {
-		// get
-		apiUserValidation(w, req)
-
-	}
-
+	// TODO case statement to run through API options
 	if _, ok := q["boat"]; ok {
-		// get
 		apiBoatValidation(w, req)
-
 	}
 
 }
@@ -37,51 +31,52 @@ func apiHandler(w http.ResponseWriter, req *http.Request) {
 // api user request to
 func apiUserValidation(w http.ResponseWriter, req *http.Request) {
 
-	err := req.ParseForm()
-	if err != nil {
-		fmt.Println(err)
-	}
+	// err := req.ParseForm()
+	// if err != nil {
+	// 	fmt.Println(err)
+	// }
 
-	// q is the parsed query from the URL as a map
-	q := req.URL.Query()
+	// // q is the parsed query from the URL as a map
+	// q := req.URL.Query()
 
-	u, err := getUserFromEmail(q["user"][0])
-	fmt.Println(err)
+	// u, err := getUserFromEmail(q["user"][0])
+	// fmt.Println(err)
 
-	if err != nil {
+	// if err != nil {
 
-		io.WriteString(w, "false")
+	// 	io.WriteString(w, "false\n\n")
 
-	} else if u.Email == q["user"][0] {
+	// } else if u.Email == q["user"][0] {
 
-		io.WriteString(w, "true")
+	// 	io.WriteString(w, "true\n\n")
 
-	}
+	// }
 
 }
 
-// api user request to
+// api user request to get a list of the boats in that users club
+// and return that as JSON. This should be called ONCE at the loading
+// of the page, and then managed by the browser
 func apiBoatValidation(w http.ResponseWriter, req *http.Request) {
 
-	err := req.ParseForm()
+	// create a query for the boats for that users club
+	u, err := getUserFromRequest(req)
+	if err != nil {
+		fmt.Fprint(w, err)
+	}
+
+	// if u.ClubVerified {
+	// 	getClubBoats(u.Club)
+	// }
+
+	boats, err := getClubBoats(u.Club)
 	if err != nil {
 		fmt.Println(err)
 	}
 
-	u, err := getUserFromRequest(req)
+	fmt.Println(boats)
 
-	// q is the parsed query from the URL as a map
-	q := req.URL.Query()
-
-	b, err := getBoatDetails(q["boat"][0], u.Club)
-	if err != nil {
-
-		io.WriteString(w, "false")
-
-	} else if b.Name == q["boat"][0] {
-
-		io.WriteString(w, "true")
-
-	}
+	enc := json.NewEncoder(w)
+	enc.Encode(boats)
 
 }
