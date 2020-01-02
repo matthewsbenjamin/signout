@@ -14,14 +14,14 @@ TODOS:
   
 - ~~add to an AWS ec2 instance~~ - tested and works
 - ~~hazards - collection and communication of hazards on the river~~
-- Password storage, reset requests (?)
-- Some responsiveness to say that the boat has been booked succesfully
+- ~~Password storage~~, reset requests (?)
+- ~~Some responsiveness to say that the boat has been booked succesfullyNAH~~
 - login management - username taken etc
 - all of the messaging layer - pinging people when they forget to sign back in - creating some kind of notification if someone is vulnerable (weather connection?)
 - hazards API
 - boats on the water API
-- User profile - requires user to be logged in
-- Clubs & Validation linked to user profile
+- ~~User profile - requires user to be logged in~~
+- ~~Clubs & Validation linked to user profile~~
 - new boat/user validation
 - Connect to the booking system
 - get a domain.... link to signout.minervabath...
