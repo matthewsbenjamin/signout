@@ -171,3 +171,43 @@ func CheckPasswordHash(password, hash string) bool {
 	err := bcrypt.CompareHashAndPassword([]byte(hash), []byte(password))
 	return err == nil
 }
+
+// returns bool (true) if the BOAT ALREADY EXISTS
+func validateBoatName(req *http.Request, boat string) bool {
+
+	db, err := sql.Open("mysql", dbCreds)
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer db.Close()
+
+	u, err := getUserFromRequest(req)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	if u.ClubVerified && u.EmailVerified && u.Admin {
+		// then it's a valid user
+		// and you can test the boatname
+
+		var b int
+		r := db.QueryRow("SELECT count(1) FROM boat_locations WHERE club = ? AND boat_name = ?", u.Club)
+		err = r.Scan(&b)
+
+		// if there is no error
+		if err != nil {
+			return false
+		}
+
+		// if b isn't anything, then there's no boat matching that name
+		if b == 0 {
+			return false
+		} else {
+			return true
+		}
+
+	}
+
+	return false
+
+}

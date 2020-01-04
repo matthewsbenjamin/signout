@@ -11,14 +11,14 @@
     {{template "menu"}}
     <div class="parentContainer">
         <div class="content">
+            <div id="notification">{{.ErrorNotification}}</div>
             <form action="/new-boat" method="POST">
-                <!-- TODO - make this validate -->
                 <input type="text" id="newBoatInput" name="boatName" class="toValidate" placeholder="Boat Name">
-                <input type="submit" value="Submit" disabled>        
+                <input type="submit" value="Submit">        
             </form>
         </div>
     </div>
     {{template "copyright"}}
 </body>
-<script src="/scripts/boat-validation.js" type="text/javascript"></script>
+<script src="../scripts/boat-validation.js" type="text/javascript"></script>
 </html>

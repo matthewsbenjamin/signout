@@ -16,6 +16,7 @@ type User struct {
 	Club          string
 	EmailVerified bool
 	ClubVerified  bool
+	Admin         bool
 }
 
 func getUserFromRequest(req *http.Request) (User, error) {
@@ -146,4 +147,31 @@ func getClubBoats(c string) ([]Boat, error) {
 	}
 
 	return Boats, nil
+}
+
+func getUserStatus(req *http.Request) (string, error) {
+
+	u, err := getUserFromRequest(req)
+	if err != nil {
+		return "invalid", err
+	}
+
+	switch {
+	// Basic status is that user email is verified
+	case u.EmailVerified && !u.EmailVerified && !u.Admin:
+		return "verified", nil
+
+	// They are then a regular member
+	case u.ClubVerified && u.EmailVerified && !u.Admin:
+		return "regular", nil
+
+	// If they have admin status
+	case u.Admin:
+		return "admin", nil
+
+	// Otherwise they're an invalid user
+	default:
+		return "invalid", nil
+	}
+
 }

@@ -16,6 +16,7 @@ type Configs struct {
 type dbCred struct {
 	User     string `yaml:"user"`
 	Pwd      string `yaml:"pwd"`
+	DB       string `yaml:"db"`
 	Endpoint string `yaml:"endpoint"`
 	Port     string `yaml:"port"`
 	DBname   string `yaml:"dbname"`

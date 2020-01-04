@@ -19,6 +19,31 @@ func newBoatPost(w http.ResponseWriter, req *http.Request) {
 
 	req.ParseForm()
 
+	b := req.FormValue("boatName")
+
+	if validateBoatName(req, b) {
+
+		// then the boat already exists
+		// serve the page with the user status
+		status, err := getUserStatus(req)
+		if err != nil {
+			http.Redirect(w, req, "/login", http.StatusTemporaryRedirect)
+		}
+
+		type Page struct {
+			ErrorNotification string
+			Status            string
+		}
+
+		pageData := Page{
+			ErrorNotification: fmt.Sprintf("A boat with the name %s already exists", b),
+			Status:            status,
+		}
+
+		tpl.ExecuteTemplate(w, "new-boat.html", pageData)
+		return
+	}
+
 	db, err := sql.Open("mysql", dbCreds)
 	if err != nil {
 		log.Fatal(err)
@@ -30,14 +55,10 @@ func newBoatPost(w http.ResponseWriter, req *http.Request) {
 		log.Fatal(err)
 	}
 
-	b := req.FormValue("boatName")
-
 	u, err := getUserFromRequest(req)
 	if err != nil {
 		log.Fatal(err)
 	}
-
-	fmt.Printf("User is: %v\n", u)
 
 	_, err = stmt.Exec(b, u.Club)
 	if err != nil {

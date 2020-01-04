@@ -50,8 +50,8 @@ func main() {
 	http.HandleFunc("/login", loginHandler)
 	http.HandleFunc("/logout", logout)
 
-	// API
-	http.HandleFunc("/api/", apiHandler)
+	// // API
+	// http.HandleFunc("/api/", apiHandler)
 
 	fmt.Printf("###################################\nRunning on port %s\n\n", config.Port)
 
@@ -67,8 +67,25 @@ func index(w http.ResponseWriter, req *http.Request) {
 
 	if !isLoggedIn(req) {
 		http.Redirect(w, req, "/login", http.StatusTemporaryRedirect)
+		return
 	}
 
-	tpl.ExecuteTemplate(w, "index.html", nil)
+	u, err := getUserStatus(req)
+	if err != nil {
+		http.Redirect(w, req, "/login", http.StatusTemporaryRedirect)
+		return
+	}
+
+	type Page struct {
+		ErrorNotification string
+		Status            string
+	}
+
+	pageData := Page{
+		ErrorNotification: "",
+		Status:            u,
+	}
+
+	tpl.ExecuteTemplate(w, "index.html", pageData)
 
 }
