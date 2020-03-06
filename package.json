@@ -8,14 +8,25 @@
   "license": "MIT",
   "private": false,
   "scripts": {
-    "build": "webpack"
+    "build": "NODE_ENV=development webpack",
+    "watch": "yarn build --watch"
   },
   "devDependencies": {
+    "autoprefixer": "^9.7.1",
     "css-loader": "^3.2.0",
+    "cssnano": "^4.1.10",
     "mini-css-extract-plugin": "^0.8.0",
     "node-sass": "^4.13.0",
+    "postcss-loader": "^3.0.0",
     "sass-loader": "^8.0.0",
+    "stylelint": "^12.0.0",
+    "stylelint-config-prettier": "^6.0.0",
+    "stylelint-config-recommended": "^3.0.0",
+    "stylelint-config-recommended-scss": "^4.0.0",
+    "stylelint-prettier": "^1.1.1",
+    "stylelint-scss": "^3.12.1",
     "webpack": "^4.41.2",
     "webpack-cli": "^3.3.10"
-  }
+  },
+  "dependencies": {}
 }

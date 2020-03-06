@@ -27,11 +27,14 @@ module.exports = {
             }
           },
           {
+            loader: "postcss-loader",
+            options: {
+              sourceMap: true
+            }
+          },
+          {
             loader: "sass-loader",
             options: {
-              sassOptions: {
-                indentWidth: 4
-              },
               sourceMap: true
             }
           }
