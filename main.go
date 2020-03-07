@@ -31,8 +31,8 @@ func init() {
 func main() {
 
 	// File serving
-	fs := http.FileServer(http.Dir("dist/"))
-	http.Handle("/dist/", http.StripPrefix("/dist/", fs))
+	fs := http.FileServer(http.Dir("public/"))
+	http.Handle("/public/", http.StripPrefix("/public/", fs))
 	img := http.FileServer(http.Dir("img/"))
 	http.Handle("/img/", http.StripPrefix("/img/", img))
 	http.Handle("/favicon.ico", http.NotFoundHandler())

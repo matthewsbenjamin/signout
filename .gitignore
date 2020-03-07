@@ -2,4 +2,5 @@
 *.yaml
 signout
 node_modules
-dist
+public
+!src/public

@@ -1,7 +1,5 @@
-import "../styles/index.scss";
-
-function component() {
-  console.log("Hello, world!");
+function component () {
+  console.log('Hello, world!')
 }
 
-component();
+component()
