@@ -1,3 +1,6 @@
 *.pem
 *.yaml
-
+signout
+node_modules
+public
+!src/public

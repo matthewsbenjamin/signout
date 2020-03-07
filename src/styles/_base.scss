@@ -1,0 +1,38 @@
+* {
+    font-family: sans-serif;
+}
+
+html, body {
+    overflow: hidden;
+}
+
+body {
+    min-height: 100vh;
+    background-image: url("/img/img01.jpg");
+    background-position: center;
+    background-repeat: repeat;
+    background-size: auto;
+}
+
+h1 {
+    color: purple;
+}
+
+a:link {
+    color: purple;
+}
+
+a:visited {
+    color: purple;
+}
+
+form {
+    background-color: white;
+    padding: 60px;
+    border-radius: 2mm;
+    justify-content: right;
+}
+
+textarea {
+    margin: 10px;
+}

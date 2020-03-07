@@ -1,0 +1,39 @@
+{
+  "name": "signout",
+  "version": "0.0.1",
+  "description": "Boat Signout",
+  "main": "index.js",
+  "repository": "git@github.com:matthewsbenjamin/signout.git",
+  "author": "Luke Xavier Symington <lukexaviersymington@gmail.com>",
+  "license": "MIT",
+  "private": false,
+  "scripts": {
+    "build": "NODE_ENV=development webpack",
+    "watch": "yarn build --watch"
+  },
+  "devDependencies": {
+    "@babel/core": "^7.8.7",
+    "@babel/preset-env": "^7.8.7",
+    "autoprefixer": "^9.7.1",
+    "babel-loader": "^8.0.6",
+    "copy-webpack-plugin": "^5.1.1",
+    "css-loader": "^3.2.0",
+    "cssnano": "^4.1.10",
+    "eslint-loader": "^3.0.3",
+    "mini-css-extract-plugin": "^0.8.0",
+    "node-sass": "^4.13.0",
+    "postcss-loader": "^3.0.0",
+    "sass-loader": "^8.0.0",
+    "standard": "^14.3.1",
+    "stylelint": "^12.0.0",
+    "stylelint-config-prettier": "^6.0.0",
+    "stylelint-config-recommended": "^3.0.0",
+    "stylelint-config-recommended-scss": "^4.0.0",
+    "stylelint-prettier": "^1.1.1",
+    "stylelint-scss": "^3.12.1",
+    "stylelint-webpack-plugin": "^1.2.3",
+    "webpack": "^4.41.2",
+    "webpack-cli": "^3.3.10"
+  },
+  "dependencies": {}
+}
