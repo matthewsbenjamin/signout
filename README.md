@@ -2,4 +2,4 @@
 
 ## Boat signout app
 
-### All TODOs and planning now on Trello
+### All TODOs and planning now on Git project
